@@ -1,40 +1,40 @@
 # PhpMyAdmin-csrf-login-brute
 
-Python-скрипт для перебора паролей phpMyAdmin с динамическим обходом защиты CSRF.
+Python-script to brute phpMyAdmin with CSRF bypass.
 
-## Особенности
+## Features
 
-* **Обход CSRF-защиты:** Скрипт динамически парсит страницу авторизации перед отправкой POST-запроса, извлекает актуальный токен безопасности (`token`) и подставляет его в форму.
-* **Многопоточность:** Реализована эффективная потокобезопасная очередь (`queue.Queue`) для параллельной обработки словаря паролей.
+* **CSRF bypass** The script dynamically parses the authorization page before sending a POST request, extracts the current CSRF-token (`token`), and inserts it into the form.
+* **Multithreading:** A thread-safe queue (`queue.Queue`) has been implemented for the parallel processing of a wordlist.
 
-## Логика работы
+## Operating logic
 
-* Сбор данных и парсинг: `requests`, `BeautifulSoup4`, `re`
-* Конкурентность: `threading`, `queue`
+* Data collection ans parsing: `requests`, `BeautifulSoup4`, `re`
+* Concurrency: `threading`, `queue`
 
-## Использование
+## Usage
 
-### Установка зависимостей
+### Installing dependencies
 ```bash
 pip install requests beautifulsoup4
 ```
 
-### Синтаксис запуска
+### Usage syntax
 ```bash
-python pma_brute.py -u <URL> -w <путь_к_словарю> [опции]
+python pma_brute.py -u <URL> -w <path_to_wordlist> [options]
 ```
 
-Пример запуска :
+Usage example :
 ```bash
 python pma_brute.py -u http://192.168.31.97/phpmyadmin/ -w /usr/share/seclists/Passwords/Common-Credentials/100k-most-used-passwords-NCSC.txt -t 40 -n administrator
 ```
 
-## Предыстория
+## Background to the creation of the script
 
-При пентесте лабораторной виртуальной среды, требовалось провести атаку методом перебора на административную панель `PhpMyAdmin` , выведенную во внешний контур сети. Так как решение из `msfconsole` (`auxiliary/scanner/http/phpmyadmin_login`) не работало, я решил написать Python-скрипт для этого.
+During a penetration test of a virtual lab environment, it was necessary to perform a brute-force attack against a `PhpMyAdmin` administrative panel (it didn't, actually, as said in description to the lab) that had been exposed to the external network perimeter. Since the solution available within `msfconsole` (`auxiliary/scanner/http/phpmyadmin_login`) didn't worked, I decided to write a Python script for this purpose.
 
-Я подправил скрипт, добавив CLI-аргументы, хотя изначально скрипт был "одноразовым", все данные для перебора находились в коде.
+I also tweaked the script by adding CLI arguments; although it was originally intended as a "one-off" script, all the data for the brute-force process had been hardcoded.
 
-## Дисклеймер
+## Disclaimer
 
-Автор не несет ответственности за любой возможный ущерб, причиненный использованием данного ПО в противоправных целях.
+The author is not responsible for any possible damage caused by using this software for illegal purposes.
