@@ -15,17 +15,17 @@ Python-script to brute phpMyAdmin with CSRF bypass.
 ## Usage
 
 ### Installing dependencies
-```bash
+```text
 pip install requests beautifulsoup4
 ```
 
 ### Usage syntax
-```bash
+```text
 python pma_brute.py -u <URL> -w <path_to_wordlist> [options]
 ```
 
 Usage example :
-```bash
+```text
 python pma_brute.py -u http://192.168.31.97/phpmyadmin/ -w /usr/share/seclists/Passwords/Common-Credentials/100k-most-used-passwords-NCSC.txt -t 40 -n administrator
 ```
 
